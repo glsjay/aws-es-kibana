@@ -1,9 +1,10 @@
 {
-  "name": "aws-es-kibana",
-  "version": "1.0.8-pre",
+  "name": "aws-es-proxy-node",
+  "version": "1.0.0",
   "description": "AWS ElasticSearch/Kibana Proxy",
   "main": "index.js",
   "scripts": {
+    "start": "node ./index.js --help",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
@@ -11,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/santthosh/aws-es-kibana.git"
+    "url": "git+https://github.com/glsjay/aws-es-kibana.git"
   },
   "keywords": [
     "AWS",
@@ -21,15 +22,15 @@
     "AWS ES Proxy",
     "AWS ES Kibana"
   ],
-  "author": "santthosh",
+  "author": "glsjay",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/santthosh/aws-es-kibana/issues"
+    "url": "https://github.com/glsjay/aws-es-kibana/issues"
   },
-  "homepage": "https://github.com/santthosh/aws-es-kibana#readme",
+  "homepage": "https://github.com/glsjay/aws-es-kibana#readme",
   "preferGlobal": true,
   "bin": {
-    "aws-es-kibana": "index.js"
+    "aws-es-proxy-node": "index.js"
   },
   "dependencies": {
     "aws-sdk": "^2.48.0",

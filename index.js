@@ -12,8 +12,16 @@ var compress = require('compression');
 const fs = require('fs');
 const homedir = require('os').homedir();
 
+// node ./index endpoint --f=saml --p=9201
 var yargs = require('yargs')
     .usage('usage: $0 [options] <aws-es-cluster-endpoint>')
+    .option('e', {
+        alias: 'endpoints',
+        default: undefined,
+        demand: false,
+        describe: 'the es address to bind',
+        type: 'string'
+    })
     .option('b', {
         alias: 'bind-address',
         default: process.env.BIND_ADDRESS || '127.0.0.1',
@@ -66,149 +74,182 @@ var yargs = require('yargs')
       demand: false,
       describe: 'request limit'
     })
+    .option('f', {
+      alias: 'aws-profile',
+      default: process.env.PROFILE || 'saml',
+      demand: false,
+      describe: 'request aws profile'
+    })
     .help()
     .version()
     .strict();
+
 var argv = yargs.argv;
 
-var ENDPOINT = process.env.ENDPOINT || argv._[0];
+var CREDENTIAL;
 
+var ENDPOINT = process.env.ENDPOINT || argv.e || argv._[0];
 if (!ENDPOINT) {
     yargs.showHelp();
     process.exit(1);
-}
-
-// Try to infer the region if it is not provided as an argument.
-var REGION = argv.r;
-if (!REGION) {
-    var m = ENDPOINT.match(/\.([^.]+)\.es\.amazonaws\.com\.?(?=.*$)/);
-    if (m) {
-        REGION = m[1];
-    } else {
-        console.error('region cannot be parsed from endpoint address, either the endpoint must end ' +
-                      'in .<region>.es.amazonaws.com or --region should be provided as an argument');
-        yargs.showHelp();
-        process.exit(1);
-    }
-}
-
-var TARGET = process.env.ENDPOINT || argv._[0];
-if (!TARGET.match(/^https?:\/\//)) {
-    TARGET = 'https://' + TARGET;
 }
 
 var BIND_ADDRESS = argv.b;
 var PORT = argv.p;
 var REQ_LIMIT = argv.l;
 
-var credentials;
-
-var PROFILE = process.env.AWS_PROFILE;
-
+var PROFILE = argv.f;
 if (!PROFILE) {
-    var chain = new AWS.CredentialProviderChain();
-    chain.resolve(function (err, resolved) {
-        if (err) throw err;
-        else credentials = resolved;
-    });
+  var chain = new AWS.CredentialProviderChain();
+  chain.resolve(function (err, resolved) {
+      if (err) throw err;
+      else CREDENTIAL = resolved;
+  });
 } else {
-    credentials = new AWS.SharedIniFileCredentials({profile: PROFILE});
-    AWS.config.credentials = credentials;
+  CREDENTIAL = new AWS.SharedIniFileCredentials({profile: PROFILE});
+  AWS.config.credentials = CREDENTIAL;
+}
+
+// print banner and global info
+if(!argv.s) {
+  console.log(figlet.textSync('AWS ES Proxy!', {
+      font: 'Speed',
+      horizontalLayout: 'default',
+      verticalLayout: 'default'
+  }));
+}
+console.log('Request limit   : ' + REQ_LIMIT);
+console.log('AWS Profile     : ' + PROFILE);
+
+
+// build proxy for all endpoints
+if(Array.isArray(ENDPOINT)){
+  var port_count = 0;
+  ENDPOINT.forEach(function(endpoint){
+    buildProxy(endpoint, BIND_ADDRESS, PORT + port_count, PROFILE);
+    port_count += 1;
+  });
+}else{
+  buildProxy(ENDPOINT, BIND_ADDRESS, PORT, PROFILE);
 }
 
 function getCredentials(req, res, next) {
-    return credentials.get(function (err) {
-        if (err) return next(err);
-        else return next();
-    });
+  return CREDENTIAL.get(function (err) {
+      if (err) return next(err);
+      else return next();
+  });
 }
 
-var options = {
-    target: TARGET,
+// Try to infer the region if it is not provided as an argument.
+function getRegion(region, endpoint){
+  if (region) {
+    return region;
+  }else{
+    var m = endpoint.match(/\.([^.]+)\.es\.amazonaws\.com\.?(?=.*$)/);
+    if (m) {
+        return m[1];
+    } else {
+        console.error('region cannot be parsed from endpoint address, either the endpoint must end ' +
+                      'in .<region>.es.amazonaws.com or --region should be provided as an argument');
+        yargs.showHelp();
+        process.exit(1);
+    }
+  }
+}
+
+function getTargetUrl(endpoint){
+  var targetUrl = process.env.ENDPOINT || endpoint;
+  if (!targetUrl.match(/^https?:\/\//)) {
+      targetUrl = 'https://' + targetUrl;
+  }
+  return targetUrl;
+}
+
+function buildProxy(endpoint, bindAddress, port, profile){
+
+  var region = getRegion(argv.r, endpoint);
+
+  var options = {
+    target: getTargetUrl(endpoint),
     changeOrigin: true,
     secure: true
-};
+  };
 
-var proxy = httpProxy.createProxyServer(options);
+  var proxy = httpProxy.createProxyServer(options);
 
-var app = express();
-app.use(compress());
-app.use(bodyParser.raw({limit: REQ_LIMIT, type: function() { return true; }}));
-app.use(getCredentials);
+  var app = express();
+  app.use(compress());
+  app.use(bodyParser.raw({limit: REQ_LIMIT, type: function() { return true; }}));
+  app.use(getCredentials);
 
-if (argv.H) {
+  if (argv.H) {
     app.get(argv.H, function (req, res) {
         res.setHeader('Content-Type', 'text/plain');
         res.send('ok');
     });
-}
+  }
 
-if (argv.u && argv.a) {
+  // use basic auth if username and passord provided
+  if (argv.u && argv.a) {
 
-  var users = {};
-  var user = process.env.USER || process.env.AUTH_USER;
-  var pass = process.env.PASSWORD || process.env.AUTH_PASSWORD;
+    var users = {};
+    var user = process.env.USER || process.env.AUTH_USER;
+    var pass = process.env.PASSWORD || process.env.AUTH_PASSWORD;
 
-  users[user] = pass;
+    users[user] = pass;
 
-  app.use(basicAuth({
-    users: users,
-    challenge: true
-  }));
-}
+    app.use(basicAuth({
+      users: users,
+      challenge: true
+    }));
+  }
 
-app.use(async function (req, res) {
+  app.use(async function (req, res) {
     var bufferStream;
     if (Buffer.isBuffer(req.body)) {
         var bufferStream = new stream.PassThrough();
         await bufferStream.end(req.body);
     }
     proxy.web(req, res, {buffer: bufferStream});
-});
+  });
 
-proxy.on('proxyReq', function (proxyReq, req) {
-    var endpoint = new AWS.Endpoint(ENDPOINT);
-    var request = new AWS.HttpRequest(endpoint);
+  proxy.on('proxyReq', function (proxyReq, req) {
+    var awsEndpoint = new AWS.Endpoint(endpoint);
+    var request = new AWS.HttpRequest(awsEndpoint);
     request.method = proxyReq.method;
     request.path = proxyReq.path;
-    request.region = REGION;
+    request.region = region;
     if (Buffer.isBuffer(req.body)) request.body = req.body;
     if (!request.headers) request.headers = {};
     request.headers['presigned-expires'] = false;
-    request.headers['Host'] = endpoint.hostname;
+    request.headers['Host'] = awsEndpoint.hostname;
 
     var signer = new AWS.Signers.V4(request, 'es');
-    signer.addAuthorization(credentials, new Date());
+    signer.addAuthorization(CREDENTIAL, new Date());
+    //console.log(request);
 
     proxyReq.setHeader('Host', request.headers['Host']);
     proxyReq.setHeader('X-Amz-Date', request.headers['X-Amz-Date']);
     proxyReq.setHeader('Authorization', request.headers['Authorization']);
-    if (request.headers['x-amz-security-token']) proxyReq.setHeader('x-amz-security-token', request.headers['x-amz-security-token']);
-});
-
-proxy.on('proxyRes', function (proxyReq, req, res) {
-    if (req.url.match(/\.(css|js|img|font)/)) {
-        res.setHeader('Cache-Control', 'public, max-age=86400');
+    if (request.headers['x-amz-security-token']){
+      proxyReq.setHeader('x-amz-security-token', request.headers['x-amz-security-token']);
     }
-});
+  });
 
-http.createServer(app).listen(PORT, BIND_ADDRESS);
+  proxy.on('proxyRes', function (proxyReq, req, res) {
+    if (req.url.match(/\.(css|js|img|font)/)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+  });
 
-if(!argv.s) {
-    console.log(figlet.textSync('AWS ES Proxy!', {
-        font: 'Speed',
-        horizontalLayout: 'default',
-        verticalLayout: 'default'
-    }));
+  http.createServer(app).listen(port, bindAddress);
+
+  console.log('*********************************************************');
+  console.log('AWS ES cluster   at: ' + endpoint);
+  console.log('Proxy available  at: http://' + bindAddress + ':' + port);
+  console.log('Kibana available at: http://' + bindAddress + ':' + port + '/_plugin/kibana/');
+  if (argv.H) {
+    console.log('Health endpoint  at: http://' + bindAddress + ':' + port + argv.H);
+  }
+  //console.log(CREDENTIAL);
 }
-
-console.log('AWS ES cluster available at http://' + BIND_ADDRESS + ':' + PORT);
-console.log('Kibana available at http://' + BIND_ADDRESS + ':' + PORT + '/_plugin/kibana/');
-if (argv.H) {
-    console.log('Health endpoint enabled at http://' + BIND_ADDRESS + ':' + PORT + argv.H);
-}
-
-fs.watch(`${homedir}/.aws/credentials`, (eventType, filename) => {
-    credentials = new AWS.SharedIniFileCredentials({profile: PROFILE});
-    AWS.config.credentials = credentials;
-});

@@ -1,55 +1,57 @@
-[![npm version](https://badge.fury.io/js/aws-es-kibana.svg)](https://badge.fury.io/js/aws-es-kibana) ![dependencies](https://david-dm.org/santthosh/aws-es-kibana.svg)
-[![Docker Stars](https://img.shields.io/docker/stars/santthosh/aws-es-kibana.svg)](https://registry.hub.docker.com/v2/repositories/santthosh/aws-es-kibana/stars/count/)
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/santthosh/aws-es-kibana)
-
 # AWS ES/Kibana Proxy
+Forked version from [Commit 2c4374c](https://github.com/santthosh/aws-es-kibana/commit/2c4374c1bcdbb8a4f38dd4bdc16f2eb48c7a33e9)
 
-AWS ElasticSearch/Kibana Proxy to access your [AWS ES](https://aws.amazon.com/elasticsearch-service/) cluster. 
+AWS ElasticSearch/Kibana Proxy with authentication to access your [AWS ES](https://aws.amazon.com/elasticsearch-service/) cluster.
 
 This is the solution for accessing your cluster if you have [configured access policies](http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-access-policies) for your ES domain
 
 ## Usage
 
-Install the npm module 
+Install the npm module
 
-    npm install -g aws-es-kibana
-    
+    npm install -g aws-es-proxy-node
+
 Set AWS credentials
-                          
+
     export AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXX
     export AWS_SECRET_ACCESS_KEY=XXXXXXXXXXXXXXXXXXX
+    export AWS_SESSION_TOKEN=XXXXXXXXXXXXXXXXXXX
 
 Run the proxy (do not include the `http` or `https` from your `cluster-endpoint` or the proxy won't function)
 
-    aws-es-kibana <cluster-endpoint>
+    aws-es-proxy-node <cluster-endpoint>
 
-Where cluster-endpoint can be either a URL (i.e. https://search-xxxxx.us-west-2.es.amazonaws.com) or a hostname (i.e. search-xxxxx.us-west-2.es.amazonaws.com). 
+Where cluster-endpoint is a hostname (i.e. search-xxxxx.us-west-2.es.amazonaws.com).
+
 Alternatively, you can set the _AWS_PROFILE_ environment variable
 
-    AWS_PROFILE=myprofile aws-es-kibana <cluster-endpoint>
-    
-Example with hostname as cluster-endpoint:
+    AWS_PROFILE=myprofile aws-es-proxy-node <cluster-endpoint>
 
-![aws-es-kibana](https://raw.githubusercontent.com/santthosh/aws-es-kibana/master/aws-es-kibana.png)
 
-### Run within docker container
+--help
 
-If you are familiar with Docker, you can run `aws-es-kibana` within a Docker container
+    Options:
+      -b, --bind-address  the ip address to bind to  [string] [default: "127.0.0.1"]
+      -p, --port          the port to bind to               [number] [default: 9200]
+      -r, --region        the region of the Elasticsearch cluster           [string]
+      -u, --user          the username to access the proxy     [default: "lgong200"]
+      -a, --password      the password to access the proxy
+      -s, --silent        remove figlet banner                      [default: false]
+      -H, --health-path   URI path for health check                         [string]
+      -l, --limit         request limit                         [default: "10000kb"]
+      -f, --aws-profile   request aws profile                      [default: "saml"]
+      --help              Show help                                        [boolean]
+      --version           Show version number                              [boolean]
 
-You can pull the official container for use
+## Examples
+Example with multiple cluster-endpoints and :
 
-    docker pull santthosh/aws-es-kibana:latest
+    aws-es-proxy-node -e endpoint1.us-east-1.es.amazonaws.com -e endpoint2.us-east-1.es.amazonaws.com -f saml -p 9201
 
-(or) Build the image
-
-	docker build -t aws-es-kibana .
-
-Run the container (do not forget to pass the required environment variables)
-
-	docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -p 127.0.0.1:9200:9200 aws-es-kibana -b 0.0.0.0 <cluster-endpoint>
-
+![aws-es-kibana](https://raw.githubusercontent.com/glsjay/aws-es-kibana/master/aws-es-proxy-node-example.png)
 
 ## Credits
+
+Forked from this [Santthosh Selvadurai](https://github.com/santthosh/aws-es-kibana/commit/2c4374c1bcdbb8a4f38dd4bdc16f2eb48c7a33e9)
 
 Adopted from this [gist](https://gist.github.com/nakedible-p/ad95dfb1c16e75af1ad5). Thanks [@nakedible-p](https://github.com/nakedible-p)
