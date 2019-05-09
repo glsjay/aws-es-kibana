@@ -1,5 +1,5 @@
 # AWS ES Proxy
-Forked version from santthosh [commit 2c4374c](https://github.com/santthosh/aws-es-kibana/commit/2c4374c1bcdbb8a4f38dd4bdc16f2eb48c7a33e9).
+Forked version from [commit 2c4374c](https://github.com/santthosh/aws-es-kibana/commit/2c4374c1bcdbb8a4f38dd4bdc16f2eb48c7a33e9) by [Santthosh Selvadurai](https://github.com/santthosh).
 Also refer to [Loading Credentials in Node.js from the Shared Credentials File](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html).
 
 This is the solution for accessing your cluster if you have [configured access policies](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-access-policies) for your ES domain.
