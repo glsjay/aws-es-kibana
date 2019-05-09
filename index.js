@@ -12,14 +12,14 @@ var compress = require('compression');
 const fs = require('fs');
 const homedir = require('os').homedir();
 
-// node ./index endpoint --f=saml --p=9201
+// node ./index endpoint -f saml -p 9201
 var yargs = require('yargs')
     .usage('usage: $0 [options] <aws-es-cluster-endpoint>')
     .option('e', {
-        alias: 'endpoints',
+        alias: 'endpoint',
         default: undefined,
         demand: false,
-        describe: 'the es address to bind',
+        describe: 'the es address(es) to bind',
         type: 'string'
     })
     .option('b', {

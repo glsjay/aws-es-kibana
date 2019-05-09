@@ -27,7 +27,9 @@ Where cluster-endpoint is a hostname (i.e. search-xxxxx.us-west-2.es.amazonaws.c
 Help get help  
 
     aws-es-proxy-node --help
+    usage: index [options] <aws-es-cluster-endpoint>
     Options:
+      -e, --endpoint      the es address(es) to bind                        [string]
       -b, --bind-address  the ip address to bind to  [string] [default: "127.0.0.1"]
       -p, --port          the port to bind to               [number] [default: 9200]
       -r, --region        the region of the Elasticsearch cluster           [string]
@@ -41,9 +43,13 @@ Help get help
       --version           Show version number                              [boolean]
 
 ## Examples
-Example with multiple cluster-endpoints and :
+Example with multiple cluster-endpoints and ports:
 
-    aws-es-proxy-node -e endpoint1.us-east-1.es.amazonaws.com -e endpoint2.us-east-1.es.amazonaws.com -f saml -p 9201
+    aws-es-proxy-node\
+        -e endpointe.us-east-1.es.amazonaws.com\
+        -e endpoint4.us-east-1.es.amazonaws.com\
+        -f saml\
+        -p 9201
 
 ![aws-es-kibana](https://raw.githubusercontent.com/glsjay/aws-es-kibana/master/aws-es-proxy-node-example.png)
 
