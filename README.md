@@ -1,9 +1,9 @@
-# AWS ES/Kibana Proxy
-Forked version from [Commit 2c4374c](https://github.com/santthosh/aws-es-kibana/commit/2c4374c1bcdbb8a4f38dd4bdc16f2eb48c7a33e9)
+# AWS ES Proxy
+Forked version from santthosh [commit 2c4374c](https://github.com/santthosh/aws-es-kibana/commit/2c4374c1bcdbb8a4f38dd4bdc16f2eb48c7a33e9).
+Also refer to [Loading Credentials in Node.js from the Shared Credentials File](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html).
 
+This is the solution for accessing your cluster if you have [configured access policies](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-access-policies) for your ES domain.
 AWS ElasticSearch/Kibana Proxy with authentication to access your [AWS ES](https://aws.amazon.com/elasticsearch-service/) cluster.
-
-This is the solution for accessing your cluster if you have [configured access policies](http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-access-policies) for your ES domain
 
 ## Usage
 
@@ -21,7 +21,7 @@ Alternatively, you can set AWS credentials
     export AWS_SESSION_TOKEN=XXXXXXXXXXXXXXXXXXX
     aws-es-proxy-node <cluster-endpoint>
 
-Where cluster-endpoint is a hostname (i.e. search-xxxxx.us-west-2.es.amazonaws.com, do not include the `http` or `https`).
+Where cluster-endpoint is a hostname (i.e. search-xxxxx.us-east-1.es.amazonaws.com, do not include the `http` or `https`).
 
 ## Examples
 Example with multiple cluster-endpoints and ports:
