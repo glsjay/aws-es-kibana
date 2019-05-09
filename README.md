@@ -23,8 +23,18 @@ Alternatively, you can set AWS credentials
 
 Where cluster-endpoint is a hostname (i.e. search-xxxxx.us-west-2.es.amazonaws.com, do not include the `http` or `https`).
 
+## Examples
+Example with multiple cluster-endpoints and ports:
 
-Help get help  
+    aws-es-proxy-node\
+        -e endpointe.us-east-1.es.amazonaws.com\
+        -e endpoint4.us-east-1.es.amazonaws.com\
+        -f saml\
+        -p 9201
+
+![aws-es-kibana](https://raw.githubusercontent.com/glsjay/aws-es-kibana/master/aws-es-proxy-node-example.png)
+
+Get help instruction:  
 
     aws-es-proxy-node --help
     usage: index [options] <aws-es-cluster-endpoint>
@@ -41,17 +51,6 @@ Help get help
       -f, --aws-profile   request aws profile                      [default: "saml"]
       --help              Show help                                        [boolean]
       --version           Show version number                              [boolean]
-
-## Examples
-Example with multiple cluster-endpoints and ports:
-
-    aws-es-proxy-node\
-        -e endpointe.us-east-1.es.amazonaws.com\
-        -e endpoint4.us-east-1.es.amazonaws.com\
-        -f saml\
-        -p 9201
-
-![aws-es-kibana](https://raw.githubusercontent.com/glsjay/aws-es-kibana/master/aws-es-proxy-node-example.png)
 
 ## Credits
 
