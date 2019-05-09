@@ -11,25 +11,22 @@ Install the npm module
 
     npm install -g aws-es-proxy-node
 
-Set AWS credentials
+Make sure you have credential profile in ~/.aws/credentials
+
+    AWS_PROFILE=saml aws-es-proxy-node <cluster-endpoint>
+Alternatively, you can set AWS credentials
 
     export AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXX
     export AWS_SECRET_ACCESS_KEY=XXXXXXXXXXXXXXXXXXX
     export AWS_SESSION_TOKEN=XXXXXXXXXXXXXXXXXXX
-
-Run the proxy (do not include the `http` or `https` from your `cluster-endpoint` or the proxy won't function)
-
     aws-es-proxy-node <cluster-endpoint>
 
-Where cluster-endpoint is a hostname (i.e. search-xxxxx.us-west-2.es.amazonaws.com).
-
-Alternatively, you can set the _AWS_PROFILE_ environment variable
-
-    AWS_PROFILE=myprofile aws-es-proxy-node <cluster-endpoint>
+Where cluster-endpoint is a hostname (i.e. search-xxxxx.us-west-2.es.amazonaws.com, do not include the `http` or `https`).
 
 
---help
+Help get help  
 
+    aws-es-proxy-node --help
     Options:
       -b, --bind-address  the ip address to bind to  [string] [default: "127.0.0.1"]
       -p, --port          the port to bind to               [number] [default: 9200]
