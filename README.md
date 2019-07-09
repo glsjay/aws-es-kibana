@@ -1,6 +1,6 @@
 # AWS ES Proxy
 
-This is the solution for accessing your cluster if you have [configured access policies](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-access-policies) for your ES domain.
+This is the solution for accessing your ES cluster if you have [configured access policies](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-access-policies) for the domain.
 AWS ElasticSearch/Kibana Proxy with authentication to access your [AWS ES](https://aws.amazon.com/elasticsearch-service/) cluster.
 
 Forked/Enhanced version from [commit 2c4374c](https://github.com/santthosh/aws-es-kibana/commit/2c4374c1bcdbb8a4f38dd4bdc16f2eb48c7a33e9) by [Santthosh Selvadurai](https://github.com/santthosh).
